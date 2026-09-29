@@ -43,20 +43,23 @@ PARAM_TO_ENTITY_TYPE = {
 }
 
 def resolve_entity(param_name, string_value):
+    if string_value is None or str(string_value).strip().lower() in ('none', 'null', ''):
+        return None
+
     entity_type = PARAM_TO_ENTITY_TYPE.get(param_name)
     if not entity_type:
         logger.debug("Parameter '%s' is not mapped to an entity type; passing as literal.", param_name)
         return string_value
         
     candidates = list(MAPPINGS[entity_type].keys())
-    val_lower = str(string_value).lower()
+    val_lower = str(string_value).strip().lower()
     
     if val_lower in candidates:
         resolved = MAPPINGS[entity_type][val_lower]
         logger.info("[Entity Resolution] [Exact Match] '%s' -> Node ID '%s' (Type: %s)", string_value, resolved, entity_type)
         return resolved
         
-    matches = difflib.get_close_matches(val_lower, candidates, n=1, cutoff=0.5)
+    matches = difflib.get_close_matches(val_lower, candidates, n=1, cutoff=0.75)
     if matches:
         resolved = MAPPINGS[entity_type][matches[0]]
         logger.info("[Entity Resolution] [Fuzzy Match] '%s' -> Node ID '%s' (Resolved as: '%s', Type: %s)", string_value, resolved, matches[0], entity_type)
@@ -64,6 +67,7 @@ def resolve_entity(param_name, string_value):
     else:
         logger.warning("[Entity Resolution] [Warning] Match Failed: '%s' not found among known %s entities.", string_value, entity_type)
         raise ValueError(f"Could not resolve '{string_value}' to any known {entity_type}.")
+
 
 def execute_plan_with_retry(question):
     start_time = time.time()
@@ -117,7 +121,9 @@ def _execute(plan, question, plan_str_used):
     logger.info("[Step 3/4] [Resolve Entities] Resolving query parameters against Knowledge Graph: %s", params)
     resolved_params = {}
     for k, v in params.items():
-        resolved_params[k] = resolve_entity(k, v)
+        res = resolve_entity(k, v)
+        if res is not None:
+            resolved_params[k] = res
         
     logger.info("[Step 3/4] [Graph Traversal] Executing deterministic NetworkX query: %s(G, %s)", op_name, resolved_params)
     try:
@@ -142,8 +148,15 @@ def _execute(plan, question, plan_str_used):
     logger.info("[Step 4/4] [Synthesizer] Passing %d record(s) to LLM #2 for grounded natural-language synthesis...", len(rows))
     answer = answer_from_rows(question, rows)
     logger.info("[Step 4/4] [Answer] Synthesized Answer: \"%s\"", answer.strip())
+    
+    # Grounding Consistency Check:
+    # If the synthesizer determined that no matching data was found, ensure rows are also empty so the API never returns mismatched data!
+    if "no matching data found in the knowledge graph" in answer.lower():
+        rows = []
+
     return {
         "plan": plan_str_used,
         "rows": rows,
         "answer": answer
     }
+

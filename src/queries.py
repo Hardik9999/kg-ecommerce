@@ -1,6 +1,32 @@
+def products_by_brand(G, brand=None, brand_id=None):
+    brand_id = brand if brand is not None else brand_id
+    if not brand_id or brand_id not in G:
+        return []
+    results = []
+    for pu, pv, data in G.in_edges(brand_id, data=True):
+        if data.get('type') == 'MADE_BY':
+            results.append({"product_name": G.nodes[pu]['name']})
+    return results
+
+def products_by_vendor(G, vendor=None, vendor_id=None):
+    vendor_id = vendor if vendor is not None else vendor_id
+    if not vendor_id or vendor_id not in G:
+        return []
+    results = []
+    for u, v, data in G.out_edges(vendor_id, data=True):
+        if data.get('type') == 'SUPPLIES':
+            results.append({"product_name": G.nodes[v]['name']})
+    return results
+
 def products_by_brand_and_vendor(G, brand=None, vendor=None, brand_id=None, vendor_id=None):
     brand_id = brand if brand is not None else brand_id
     vendor_id = vendor if vendor is not None else vendor_id
+    if not brand_id and not vendor_id:
+        return []
+    if brand_id and not vendor_id:
+        return products_by_brand(G, brand_id=brand_id)
+    if vendor_id and not brand_id:
+        return products_by_vendor(G, vendor_id=vendor_id)
     if vendor_id not in G or brand_id not in G:
         return []
     results = []
@@ -11,6 +37,7 @@ def products_by_brand_and_vendor(G, brand=None, vendor=None, brand_id=None, vend
                 if pdata.get('type') == 'MADE_BY' and pv == brand_id:
                     results.append({"product_name": G.nodes[product_id]['name']})
     return results
+
 
 def categories_by_vendor(G, vendor=None, vendor_id=None):
     vendor_id = vendor if vendor is not None else vendor_id

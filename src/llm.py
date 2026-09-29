@@ -20,12 +20,14 @@ The graph has the following nodes and edge types:
 You must output a JSON object with exactly two keys: "op" and "params".
 The "op" must be one of the following operations:
 1. "products_by_brand_and_vendor" (params: "brand", "vendor")
-2. "categories_by_vendor" (params: "vendor")
-3. "vendors_by_brand" (params: "brand")
-4. "customers_by_brand" (params: "brand")
-5. "total_quantity_ordered" (params: "product")
-6. "order_details" (params: "order_id")
-7. "products_by_category" (params: "category")
+2. "products_by_brand" (params: "brand")
+3. "products_by_vendor" (params: "vendor")
+4. "categories_by_vendor" (params: "vendor")
+5. "vendors_by_brand" (params: "brand")
+6. "customers_by_brand" (params: "brand")
+7. "total_quantity_ordered" (params: "product")
+8. "order_details" (params: "order_id")
+9. "products_by_category" (params: "category")
 
 The "params" must be a dictionary matching the operation's required arguments. 
 Use the exact names mentioned in the question for the parameters.
@@ -33,6 +35,12 @@ Use the exact names mentioned in the question for the parameters.
 Examples:
 Q: What products does Apple make that are supplied by TechDistributors?
 {"op": "products_by_brand_and_vendor", "params": {"brand": "Apple", "vendor": "TechDistributors"}}
+
+Q: What are the products by Apple?
+{"op": "products_by_brand", "params": {"brand": "Apple"}}
+
+Q: What products does TechDistributors supply?
+{"op": "products_by_vendor", "params": {"vendor": "TechDistributors"}}
 
 Q: Show me the details for order O001.
 {"op": "order_details", "params": {"order_id": "O001"}}

@@ -23,3 +23,8 @@ desktop.ini
 
 # Logs & temporary files
 *.log
+
+# Personal video presentation notes
+LOOM_SCRIPT.md
+[Ll]oom_[Ss]cript.md
+
