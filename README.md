@@ -12,7 +12,7 @@ graph TD
     Product[Product] -->|MADE_BY| Brand[Brand]
     Product -->|BELONGS_TO| Category[Category]
     Vendor[Vendor] -->|SUPPLIES| Product
-    Order[Order] -->|CONTAINS {qty, price}| Product
+    Order[Order] -->|"CONTAINS (quantity, unit_price)"| Product
     Customer[Customer] -->|PLACED| Order
 ```
 
