@@ -22,7 +22,7 @@ graph TD
 
 1. **Clone & Environment Setup:**
    ```bash
-   git clone <repo-url>
+   git clone https://github.com/Hardik9999/kg-ecommerce.git
    cd kg-ecommerce
    python -m venv venv
    
